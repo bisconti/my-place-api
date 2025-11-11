@@ -1,6 +1,8 @@
 package com.record.myplace.user;
 
 import com.record.myplace.user.dto.LoginRequest;
+import com.record.myplace.user.dto.LoginResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,21 +27,14 @@ public class LoginController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             // 로그인 서비스 호출
-            User user = userService.login(request);
+        	LoginResponse response = userService.login(request);
 
             // 로그인 성공 시 200 OK와 사용자 정보를 JSON 형태로 반환
-            return ResponseEntity.ok(Map.of(
-                    "message", "로그인 성공",
-                    "user", Map.of(
-                            "email", user.getEmail()
-                    )
-            ));
+            return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
             // 로그인 실패 시 401 Unauthorized (인증 실패) 상태 코드 반환
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", e.getMessage()));
+        	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         }
     }
 }

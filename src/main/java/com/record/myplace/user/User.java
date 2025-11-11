@@ -17,7 +17,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String passwordHash; // 실제 비밀번호 대신 해시된 비밀번호를 저장합니다.
+    private String password; // 실제 비밀번호 대신 해시된 비밀번호를 저장합니다.
     
     // 추가: SQL 명세와 일치시키기 위해 username 필드를 추가합니다.
     @Column(nullable = false)
