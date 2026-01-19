@@ -30,7 +30,7 @@ public class User {
     @Column(name = "username", nullable = false)
     private String username; 
     
-    @Column(name = "birthDate")
+    @Column(name = "birth_date")
     private LocalDate birthDate;
     
     @Column(name = "gender", length = 1)

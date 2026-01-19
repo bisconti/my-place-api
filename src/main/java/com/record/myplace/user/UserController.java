@@ -1,5 +1,6 @@
 package com.record.myplace.user;
 
+import com.record.myplace.user.dto.FindPasswordRequest;
 import com.record.myplace.user.dto.LoginRequest;
 import com.record.myplace.user.dto.LoginResponse;
 import com.record.myplace.user.dto.SignUpRequest;
@@ -23,7 +24,14 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
-
+    
+    /**
+     * POST /auth/login
+     * 로그인
+     *
+     * @param request 요청 본문
+     * @return 중복이 아닐 경우 200 OK, 중복일 경우 409 Conflict와 오류 메시지
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
@@ -37,7 +45,7 @@ public class UserController {
     }
     
     /**
-     * POST /api/checkEmailDup
+     * POST /auth/checkEmailDup
      * 이메일 중복 여부를 확인
      *
      * @param request 요청 본문 (예: {"email": "test@example.com"})
@@ -68,5 +76,15 @@ public class UserController {
     	
     	return ResponseEntity.ok().body("회원가입 성공");
     }
+    
+    @PostMapping("/find-password")
+    public ResponseEntity<?> findPassword(@Validated @RequestBody FindPasswordRequest req) {
+    	userService.sendPasswordResetEmail(req.getEmail());
+    	
+    	return ResponseEntity.ok(Map.of(
+    		"message", "입력하신 이메일로 비밀번호 재설정 안내 메일을 발송했습니다."
+    	));
+    }
+   
 }
 	 
