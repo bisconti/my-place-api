@@ -1,6 +1,7 @@
 package com.record.myplace.user.dto;
 
-import com.record.myplace.user.User;
+import com.record.myplace.user.entity.User;
+
 import lombok.Getter;
 
 @Getter

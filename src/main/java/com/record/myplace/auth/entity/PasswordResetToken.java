@@ -1,4 +1,4 @@
-package com.record.myplace.user.entity;
+package com.record.myplace.auth.entity;
 
 import java.time.LocalDateTime;
 

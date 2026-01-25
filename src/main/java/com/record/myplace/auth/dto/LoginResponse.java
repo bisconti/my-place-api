@@ -1,4 +1,6 @@
-package com.record.myplace.user.dto;
+package com.record.myplace.auth.dto;
+
+import com.record.myplace.user.dto.UserDto;
 
 import lombok.Builder;
 import lombok.Getter;

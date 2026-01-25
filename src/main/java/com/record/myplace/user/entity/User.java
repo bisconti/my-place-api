@@ -1,4 +1,4 @@
-package com.record.myplace.user;
+package com.record.myplace.user.entity;
 
 import java.time.LocalDate;
 
@@ -29,10 +29,16 @@ public class User {
     
     @Column(name = "username", nullable = false)
     private String username; 
+
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
     
     @Column(name = "birth_date")
     private LocalDate birthDate;
     
     @Column(name = "gender", length = 1)
     private String gender;
+    
+    @Column(name = "bio")
+    private String bio;
 }

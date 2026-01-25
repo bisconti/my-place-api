@@ -1,4 +1,4 @@
-package com.record.myplace.user;
+package com.record.myplace.infra.mail;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

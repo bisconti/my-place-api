@@ -1,7 +1,8 @@
-package com.record.myplace.user.repository;
+package com.record.myplace.auth.repository;
 
-import com.record.myplace.user.entity.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.record.myplace.auth.entity.PasswordResetToken;
 
 import java.util.Optional;
 

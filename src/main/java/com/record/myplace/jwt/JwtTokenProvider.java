@@ -1,6 +1,6 @@
 package com.record.myplace.jwt;
 
-import com.record.myplace.user.User;
+import com.record.myplace.user.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
