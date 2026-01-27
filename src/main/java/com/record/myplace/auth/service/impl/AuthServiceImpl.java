@@ -18,9 +18,9 @@ import com.record.myplace.auth.dto.SignUpRequest;
 import com.record.myplace.auth.entity.PasswordResetToken;
 import com.record.myplace.auth.repository.AuthRepository;
 import com.record.myplace.auth.repository.PasswordResetTokenRepository;
+import com.record.myplace.auth.security.JwtTokenProvider;
 import com.record.myplace.auth.service.AuthService;
 import com.record.myplace.infra.mail.MailService;
-import com.record.myplace.jwt.JwtTokenProvider;
 import com.record.myplace.user.dto.UserDto;
 import com.record.myplace.user.entity.User;
 

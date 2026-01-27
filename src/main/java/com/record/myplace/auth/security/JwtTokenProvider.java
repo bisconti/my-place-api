@@ -1,6 +1,10 @@
-package com.record.myplace.jwt;
+package com.record.myplace.auth.security;
 
 import com.record.myplace.user.entity.User;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -50,5 +54,29 @@ public class JwtTokenProvider {
                 .setExpiration(validity) // 토큰 만료 시간
                 .signWith(key, SignatureAlgorithm.HS256) // 사용할 서명 알고리즘과 비밀 키
                 .compact();
+    }
+    
+    /** 토큰에서 Claims 추출 */
+    private Claims getClaims(String token) {
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token); //exp 만료면 예외 발생
+        return claimsJws.getBody();
+    }
+    
+    /** 토큰 유효성 검증 (서명/만료/형식) */
+    public boolean validateToken(String token) {
+        try {
+            getClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /** 토큰의 subject(email) 추출 */
+    public String getEmail(String token) {
+        return getClaims(token).getSubject();
     }
 }
