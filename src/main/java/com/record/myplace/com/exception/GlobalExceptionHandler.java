@@ -51,6 +51,12 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(Map.of("message", message));
     }
+    
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+    }
+
 
     /**
      * 그 외 모든 예외

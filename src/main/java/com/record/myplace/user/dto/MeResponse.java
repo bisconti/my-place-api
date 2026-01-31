@@ -5,6 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class MessageResponse {
-	private String message;
+public class MeResponse {
+	private String useremail;
+	private String nickname;
+	private String bio;
 }

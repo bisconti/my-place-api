@@ -1,7 +1,9 @@
 package com.record.myplace.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 
+@Getter
 public class ChangePasswordRequest {
 	@NotBlank
 	private String currentPassword;
