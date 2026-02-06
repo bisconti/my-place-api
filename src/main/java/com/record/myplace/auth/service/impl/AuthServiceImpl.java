@@ -16,6 +16,7 @@ import com.record.myplace.auth.dto.LoginRequest;
 import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.SignUpRequest;
 import com.record.myplace.auth.entity.PasswordResetToken;
+import com.record.myplace.auth.exception.UnauthorizedException;
 import com.record.myplace.auth.repository.AuthRepository;
 import com.record.myplace.auth.repository.PasswordResetTokenRepository;
 import com.record.myplace.auth.security.JwtTokenProvider;
@@ -47,14 +48,14 @@ public class AuthServiceImpl implements AuthService{
         Optional<User> userOptional = authRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            throw new RuntimeException("이메일이 존재하지 않습니다.");
+        	throw new UnauthorizedException("이메일 또는 비밀번호를 확인하세요.");
         }
 
         User user = userOptional.get();
 
         // 비밀번호 일치 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+             throw new UnauthorizedException("이메일 또는 비밀번호를 확인하세요.");
         }
 
         // JWT 토큰 생성

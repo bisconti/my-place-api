@@ -6,6 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.record.myplace.auth.exception.UnauthorizedException;
+import com.record.myplace.com.dto.MessageResponse;
 
 import java.util.Map;
 
@@ -18,10 +22,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
-        log.warn("IllegalArgumentException: {}", e.getMessage());
-        return ResponseEntity
-                .badRequest()
-                .body(Map.of("message", e.getMessage()));
+    	return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
 
     /**
@@ -33,6 +34,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", e.getMessage()));
+    }
+    
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<MessageResponse> handleUnauthorized(UnauthorizedException e) {
+        return ResponseEntity.status(401).body(new MessageResponse(e.getMessage()));
     }
 
     /**
@@ -52,20 +58,19 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", message));
     }
     
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<MessageResponse> handleResponseStatus(ResponseStatusException e) {
+        int status = e.getStatusCode().value();
+        String msg = (e.getReason() != null) ? e.getReason() : "요청 처리 중 오류가 발생했습니다.";
+        return ResponseEntity.status(status).body(new MessageResponse(msg));
     }
-
-
+    
     /**
      * 그 외 모든 예외
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception e) {
-        log.error("Unhandled exception", e);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "서버 오류가 발생했습니다."));
+    public ResponseEntity<MessageResponse> handleException(Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body(new MessageResponse("서버 오류가 발생했습니다."));
     }
 }
