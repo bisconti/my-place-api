@@ -16,11 +16,14 @@ import com.record.myplace.auth.dto.LoginRequest;
 import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.SignUpRequest;
 import com.record.myplace.auth.entity.PasswordResetToken;
+import com.record.myplace.auth.entity.RefreshToken;
 import com.record.myplace.auth.exception.UnauthorizedException;
 import com.record.myplace.auth.repository.AuthRepository;
 import com.record.myplace.auth.repository.PasswordResetTokenRepository;
+import com.record.myplace.auth.repository.RefreshTokenRepository;
 import com.record.myplace.auth.security.JwtTokenProvider;
 import com.record.myplace.auth.service.AuthService;
+import com.record.myplace.auth.util.TokenHashUtil;
 import com.record.myplace.infra.mail.MailService;
 import com.record.myplace.user.dto.UserDto;
 import com.record.myplace.user.entity.User;
@@ -37,37 +40,82 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final PasswordResetTokenRepository tokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenHashUtil tokenHashUtil;
     private final MailService mailService;
     
     @Value("${app.frontend.reset-password-url}")
     private String resetPasswordBaseUrl;
 
-	@Override
-	public LoginResponse login(LoginRequest request) {
-        // 이메일로 사용자 찾기
-        Optional<User> userOptional = authRepository.findByEmail(request.getEmail());
+    @Override
+    @Transactional
+    public LoginResponse login(LoginRequest request) {
 
-        if (userOptional.isEmpty()) {
-        	throw new UnauthorizedException("이메일 또는 비밀번호를 확인하세요.");
-        }
+        User user = authRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new UnauthorizedException("이메일 또는 비밀번호를 확인하세요."));
 
-        User user = userOptional.get();
-
-        // 비밀번호 일치 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-             throw new UnauthorizedException("이메일 또는 비밀번호를 확인하세요.");
+            throw new UnauthorizedException("이메일 또는 비밀번호를 확인하세요.");
         }
 
-        // JWT 토큰 생성
-        String jwtToken = tokenProvider.createToken(user);
-        
-        // 응답 DTO 생성 및 반환
+        // access token
+        String accessToken = tokenProvider.createAccessToken(user);
+
+        // refresh token
+        String refreshToken = tokenProvider.createRefreshToken(user.getEmail());
+
+        RefreshToken rt = new RefreshToken();
+        rt.setUseremail(user.getEmail());
+        rt.setTokenHash(tokenHashUtil.sha256(refreshToken));
+        rt.setExpiresAt(LocalDateTime.now().plusDays(14));
+        refreshTokenRepository.save(rt);
+
         return LoginResponse.builder()
-                .user(new UserDto(user)) // User 엔티티를 UserDto로 변환
-                .token(jwtToken)         // 생성된 토큰 포함
-                .message("로그인 성공")
-                .build();
-	}
+            .user(new UserDto(user))
+            .token(accessToken)
+            .refreshToken(refreshToken) // ⭐ DTO에 추가
+            .message("로그인 성공")
+            .build();
+    }
+    
+    @Override
+    @Transactional
+    public String refresh(String refreshTokenRaw) {
+    	
+    	if (!tokenProvider.validateToken(refreshTokenRaw)
+    			|| !tokenProvider.isRefreshToken(refreshTokenRaw)) {
+    		throw new UnauthorizedException("유효하지 않은 refresh token");
+    	}
+    	
+    	String email = tokenProvider.getEmail(refreshTokenRaw);
+    	String hash = tokenHashUtil.sha256(refreshTokenRaw);
+    	
+    	RefreshToken stored = refreshTokenRepository
+    		.findByTokenHashAndRevoked(hash, "N")
+    		.orElseThrow(() -> new UnauthorizedException("refresh token 만료"));
+    	
+    	if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
+    		stored.setRevoked("Y");
+    		throw new UnauthorizedException("refresh token 만료");
+    	}
+    	
+    	stored.setRevoked("Y");
+    	
+    	User user = authRepository.findByEmail(email)
+    		.orElseThrow(() -> new UnauthorizedException("사용자 없음"));
+    	
+        String newAccessToken = tokenProvider.createAccessToken(user);
+        String newRefreshToken = tokenProvider.createRefreshToken(email);
+
+        RefreshToken newRt = new RefreshToken();
+        newRt.setUseremail(email);
+        newRt.setTokenHash(tokenHashUtil.sha256(newRefreshToken));
+        newRt.setExpiresAt(LocalDateTime.now().plusDays(14));
+        refreshTokenRepository.save(newRt);
+
+        return newAccessToken;
+    }
+
 
 	@Override
 	public boolean checkEmailDuplication(String email) {

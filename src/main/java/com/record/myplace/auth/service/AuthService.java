@@ -7,6 +7,8 @@ import com.record.myplace.auth.dto.SignUpRequest;
 public interface AuthService {
 
 	LoginResponse login(LoginRequest request);
+	
+	String refresh(String refreshTokenRaw);
 
 	boolean checkEmailDuplication(String email);
 

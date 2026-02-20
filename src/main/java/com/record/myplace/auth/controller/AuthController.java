@@ -19,6 +19,7 @@ import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.ResetPasswordRequest;
 import com.record.myplace.auth.dto.SignUpRequest;
 import com.record.myplace.auth.dto.ValidateTokenResponse;
+import com.record.myplace.auth.repository.RefreshTokenRepository;
 import com.record.myplace.auth.service.AuthService;
 import com.record.myplace.com.dto.MessageResponse;
 
@@ -29,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 	private final AuthService authService;
+	private final RefreshTokenRepository refreshTokenRepository;
+	
     /**
      * 로그인
      */
@@ -37,6 +40,30 @@ public class AuthController {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(
+            @RequestBody Map<String, String> body) {
+
+        String refreshToken = body.get("refreshToken");
+        String newAccessToken = authService.refresh(refreshToken);
+
+        return ResponseEntity.ok(Map.of(
+            "accessToken", newAccessToken
+        ));
+    }
+    
+    /*
+     * 로그아웃 
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        refreshTokenRepository.findAllByUseremailAndRevoked(email, "N")
+            .forEach(rt -> rt.setRevoked("Y"));
+        return ResponseEntity.ok().build();
+    }
+
     
     /**
      * 이메일 중복체크

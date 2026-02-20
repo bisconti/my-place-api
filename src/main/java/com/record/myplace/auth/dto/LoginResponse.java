@@ -20,6 +20,8 @@ public class LoginResponse {
     // JWT 토큰 (프론트엔드에서 요구하는 key)
     private String token; 
     
+    private String refreshToken;
+    
     // 메시지
     private String message;
 }
