@@ -3,6 +3,11 @@ package com.record.myplace.auth.security;
 import java.io.IOException;
 import java.util.List;
 
+import com.record.myplace.auth.principal.CustomUserDetails;
+import com.record.myplace.user.entity.User;
+import com.record.myplace.user.repository.UserRepository; // 네 repo 경로에 맞춰
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,13 +19,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -31,15 +36,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            String email = jwtTokenProvider.getEmail(token); // 토큰에서 sub/email 꺼내기
+        if (StringUtils.hasText(token)
+                && jwtTokenProvider.validateToken(token)
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            var auth = new UsernamePasswordAuthenticationToken(
-                    email,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            String email = jwtTokenProvider.getEmail(token);
+
+            // ✅ email로 User 조회
+            User user = userRepository.findByEmail(email).orElse(null);
+
+            if (user != null) {
+                CustomUserDetails userDetails = new CustomUserDetails(user);
+
+                var auth = new UsernamePasswordAuthenticationToken(
+                        userDetails, // ✅ principal = CustomUserDetails(User)
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+            // user가 없으면 인증 세팅 안 하고 그냥 통과(= 이후 인증 실패 처리)
         }
 
         filterChain.doFilter(request, response);
@@ -49,9 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String bearer = request.getHeader("Authorization");
         if (!StringUtils.hasText(bearer)) return null;
 
-        if (bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
-        }
+        if (bearer.startsWith("Bearer ")) return bearer.substring(7);
         return null;
     }
 }
