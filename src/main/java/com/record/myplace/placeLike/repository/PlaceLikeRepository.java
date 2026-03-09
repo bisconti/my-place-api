@@ -16,4 +16,6 @@ public interface PlaceLikeRepository extends JpaRepository<PlaceLike, Long> {
     List<PlaceLike> findAllByUseremailOrderByCreatedAtDesc(String useremail);
 
     long deleteByUseremailAndPlaceId(String useremail, String placeId);
+
+	long countByUseremail(String useremail);
 }

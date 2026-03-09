@@ -6,6 +6,10 @@ import com.record.myplace.placeLike.dto.PlaceLikeToggleRequest;
 
 public interface PlaceLikeService {
     PlaceLikeResponse toggle(String useremail, PlaceLikeToggleRequest req);
+    
     PlaceLikeListResponse myLikes(String useremail);
+    
     boolean exists(String useremail, String placeId);
+    
+	long count(String useremail);
 }

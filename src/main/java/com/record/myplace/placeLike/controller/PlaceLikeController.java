@@ -57,4 +57,16 @@ public class PlaceLikeController {
         boolean liked = placeLikeService.exists(useremail, placeId);
         return ResponseEntity.ok(liked);
     }
+    
+    /**
+     * 내 찜 개수 조회
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> count(
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        String useremail = user.getEmail();
+        long count = placeLikeService.count(useremail);
+        return ResponseEntity.ok(count);
+    }
 }

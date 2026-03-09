@@ -109,4 +109,9 @@ public class PlaceLikeServiceImpl implements PlaceLikeService {
     public boolean exists(String useremail, String placeId) {
         return placeLikeRepository.existsByUseremailAndPlaceId(useremail, placeId);
     }
+    
+    @Override
+    public long count(String useremail) {
+        return placeLikeRepository.countByUseremail(useremail);
+    }
 }

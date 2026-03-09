@@ -34,32 +34,82 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+
+        String bearer = request.getHeader("Authorization");
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token)
-                && jwtTokenProvider.validateToken(token)
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+        System.out.println("\n[JWT-FILTER] " + method + " " + uri);
+        System.out.println("[JWT-FILTER] hasAuthorizationHeader=" + (bearer != null && !bearer.isBlank()));
+        System.out.println("[JWT-FILTER] tokenResolved=" + (token != null && !token.isBlank()));
+        System.out.println("[JWT-FILTER] beforeAuth=" + SecurityContextHolder.getContext().getAuthentication());
 
-            String email = jwtTokenProvider.getEmail(token);
-
-            // ✅ email로 User 조회
-            User user = userRepository.findByEmail(email).orElse(null);
-
-            if (user != null) {
-                CustomUserDetails userDetails = new CustomUserDetails(user);
-
-                var auth = new UsernamePasswordAuthenticationToken(
-                        userDetails, // ✅ principal = CustomUserDetails(User)
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
+        try {
+            // 1) 토큰 없으면 그냥 통과
+            if (!StringUtils.hasText(token)) {
+                System.out.println("[JWT-FILTER] SKIP: token is empty");
+                filterChain.doFilter(request, response);
+                return;
             }
-            // user가 없으면 인증 세팅 안 하고 그냥 통과(= 이후 인증 실패 처리)
-        }
 
-        filterChain.doFilter(request, response);
+            // 2) 이미 인증 있으면 통과
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                System.out.println("[JWT-FILTER] SKIP: authentication already exists");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 3) 토큰 검증
+            boolean valid = jwtTokenProvider.validateToken(token);
+            System.out.println("[JWT-FILTER] validateToken=" + valid);
+
+            if (!valid) {
+                System.out.println("[JWT-FILTER] SKIP: invalid token");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 4) 이메일 추출
+            String email = jwtTokenProvider.getEmail(token);
+            System.out.println("[JWT-FILTER] extractedEmail=" + email);
+
+            if (!StringUtils.hasText(email)) {
+                System.out.println("[JWT-FILTER] SKIP: email is empty");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 5) DB 조회
+            User user = userRepository.findByEmail(email).orElse(null);
+            System.out.println("[JWT-FILTER] userFound=" + (user != null));
+
+            if (user == null) {
+                System.out.println("[JWT-FILTER] SKIP: no user in DB for email=" + email);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 6) 인증 세팅
+            CustomUserDetails userDetails = new CustomUserDetails(user);
+            var auth = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            System.out.println("[JWT-FILTER] AUTH SET: principal=" + auth.getPrincipal().getClass().getName());
+
+            filterChain.doFilter(request, response);
+
+        } catch (Exception e) {
+            System.out.println("[JWT-FILTER] ERROR: " + e.getClass().getName() + " / " + e.getMessage());
+            e.printStackTrace();
+            filterChain.doFilter(request, response);
+        } finally {
+            System.out.println("[JWT-FILTER] afterAuth=" + SecurityContextHolder.getContext().getAuthentication());
+        }
     }
 
     private String resolveToken(HttpServletRequest request) {
