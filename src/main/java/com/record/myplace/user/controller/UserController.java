@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.record.myplace.auth.principal.CustomUserDetails;
 import com.record.myplace.com.dto.MessageResponse;
 import com.record.myplace.user.dto.ChangePasswordRequest;
 import com.record.myplace.user.dto.MeResponse;
@@ -27,19 +29,19 @@ public class UserController {
 
     // 프로필 조회
     @GetMapping("/me")
-    public ResponseEntity<MeResponse> me(Authentication auth) {
-        return ResponseEntity.ok(userService.getMe(auth.getName()));
+    public ResponseEntity<MeResponse> me(@AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(userService.getMe(user.getEmail()));
     }
 
     // 프로필 수정
     @PutMapping("/me")
     public ResponseEntity<UpdateProfileResponse> updateMe(
             @RequestBody Map<String, String> req,
-            Authentication auth
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
         return ResponseEntity.ok(
                 userService.updateMe(
-                        auth.getName(),
+                        user.getEmail(),
                         req.get("nickname"),
                         req.get("bio")
                 )
@@ -50,11 +52,11 @@ public class UserController {
     @PutMapping("/me/password")
     public ResponseEntity<MessageResponse> changePassword(
             @Valid @RequestBody ChangePasswordRequest req,
-            Authentication auth
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
         return ResponseEntity.ok(
                 userService.changePassword(
-                        auth.getName(),
+                		user.getEmail(),
                         req.getCurrentPassword(),
                         req.getNewPassword()
                 )
