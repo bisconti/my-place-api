@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.record.myplace.auth.principal.CustomUserDetails;
 import com.record.myplace.com.dto.MessageResponse;
+import com.record.myplace.placeReview.service.PlaceReviewService;
 import com.record.myplace.user.dto.ChangePasswordRequest;
 import com.record.myplace.user.dto.MeResponse;
 import com.record.myplace.user.dto.UpdateProfileResponse;
@@ -26,11 +27,19 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final PlaceReviewService placeReviewService;
 
     // 프로필 조회
     @GetMapping("/me")
     public ResponseEntity<MeResponse> me(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(userService.getMe(user.getEmail()));
+    }
+    
+    // 마이페이지 리뷰 건수 조회
+    @GetMapping("/{userEmail}/count")
+    public ResponseEntity<Long> getReviewCountByUserEmail(@PathVariable String userEmail) {
+        long count = placeReviewService.getReviewCountByUserEmail(userEmail);
+        return ResponseEntity.ok(count);
     }
 
     // 프로필 수정

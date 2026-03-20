@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.record.myplace.placeReview.dto.PlaceReviewRequestDto;
 import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
+import com.record.myplace.placeReview.dto.PlaceReviewSummaryDto;
 import com.record.myplace.placeReview.entity.PlaceReview;
 import com.record.myplace.placeReview.repository.PlaceReviewRepository;
 import com.record.myplace.placeReview.service.PlaceReviewService;
@@ -59,6 +60,31 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
                 .stream()
                 .map(PlaceReviewResponseDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+    
+    // 식당 상세페이지 진입 시 식당 별점과 리뷰 수를 구하기
+    @Override
+    @Transactional(readOnly = true)
+    public PlaceReviewSummaryDto getReviewSummaryByPlaceId(String placeId) {
+        long reviewCount = placeReviewRepository.countByPlaceId(placeId);
+        Double averageRating = placeReviewRepository.findAverageRatingByPlaceId(placeId);
+
+        if (averageRating == null) {
+            averageRating = 0.0;
+        }
+
+        return PlaceReviewSummaryDto.builder()
+                .placeId(placeId)
+                .averageRating(Math.round(averageRating * 10) / 10.0) // 소수점 1자리
+                .reviewCount(reviewCount)
+                .build();
+    }
+    
+    // 마이 페이지 내 리뷰건수 조회
+    @Override
+    @Transactional(readOnly = true)
+    public long getReviewCountByUserEmail(String userEmail) {
+        return placeReviewRepository.countByUserEmail(userEmail);
     }
 
     @Override

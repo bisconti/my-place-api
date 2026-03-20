@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.record.myplace.placeReview.dto.PlaceReviewRequestDto;
 import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
+import com.record.myplace.placeReview.dto.PlaceReviewSummaryDto;
 import com.record.myplace.placeReview.service.PlaceReviewService;
 
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,13 @@ public class PlaceReviewController {
     public ResponseEntity<List<PlaceReviewResponseDto>> getReviewsByUserEmail(@PathVariable String userEmail) {
         List<PlaceReviewResponseDto> reviewList = placeReviewService.getReviewsByUserEmail(userEmail);
         return ResponseEntity.ok(reviewList);
+    }
+    
+    // 식당 상세페이지 별점, 리뷰 수 조회
+    @GetMapping("/place/{placeId}/summary")
+    public ResponseEntity<PlaceReviewSummaryDto> getReviewSummaryByPlaceId(@PathVariable String placeId) {
+        PlaceReviewSummaryDto summaryDto = placeReviewService.getReviewSummaryByPlaceId(placeId);
+        return ResponseEntity.ok(summaryDto);
     }
 
     // 리뷰 삭제

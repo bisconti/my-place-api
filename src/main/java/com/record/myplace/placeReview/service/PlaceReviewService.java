@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.record.myplace.placeReview.dto.PlaceReviewRequestDto;
 import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
+import com.record.myplace.placeReview.dto.PlaceReviewSummaryDto;
 
 public interface PlaceReviewService {
 
@@ -12,6 +13,10 @@ public interface PlaceReviewService {
     List<PlaceReviewResponseDto> getReviewsByPlaceId(String placeId);
 
     List<PlaceReviewResponseDto> getReviewsByUserEmail(String userEmail);
+    
+    PlaceReviewSummaryDto getReviewSummaryByPlaceId(String placeId);
+    
+    long getReviewCountByUserEmail(String userEmail);
 
     void deleteReview(Long reviewId);
 }
