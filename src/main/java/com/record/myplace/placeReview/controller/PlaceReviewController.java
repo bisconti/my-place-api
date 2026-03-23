@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.record.myplace.placeReview.dto.PlaceReviewRequestDto;
 import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
 import com.record.myplace.placeReview.dto.PlaceReviewSummaryDto;
@@ -29,17 +31,25 @@ import lombok.RequiredArgsConstructor;
 public class PlaceReviewController {
 
     private final PlaceReviewService placeReviewService;
+    private final ObjectMapper objectMapper;
 
     // 리뷰 등록
-    @PostMapping
-    public ResponseEntity<?> createReview(@RequestBody PlaceReviewRequestDto requestDto) {
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<?> createReview(
+            @RequestPart("review") String reviewJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         try {
-            PlaceReviewResponseDto responseDto = placeReviewService.createReview(requestDto);
+            PlaceReviewRequestDto requestDto = objectMapper.readValue(reviewJson, PlaceReviewRequestDto.class);
+            PlaceReviewResponseDto responseDto = placeReviewService.createReview(requestDto, images);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         } catch (IllegalArgumentException e) {
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(errorMap);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("message", "리뷰 등록 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMap);
         }
     }
 

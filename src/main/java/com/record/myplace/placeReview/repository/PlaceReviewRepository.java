@@ -24,4 +24,8 @@ public interface PlaceReviewRepository extends JpaRepository<PlaceReview, Long> 
 
     @Query("SELECT AVG(pr.rating) FROM PlaceReview pr WHERE pr.placeId = :placeId")
     Double findAverageRatingByPlaceId(String placeId);
+    
+    // 식당 상세 페이지에서 리뷰 작성 이메일 - 유저 닉네임 매칭
+    @Query("SELECT pr FROM PlaceReview pr JOIN FETCH pr.user WHERE pr.placeId = :placeId ORDER BY pr.createdAt DESC")
+    List<PlaceReview> findByPlaceIdWithUser(String placeId);
 }
