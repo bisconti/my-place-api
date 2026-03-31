@@ -2,6 +2,7 @@ package com.record.myplace.placeLike.entity;
 
 import java.time.LocalDateTime;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,9 +34,6 @@ public class PlaceLike {
 	
 	@Column(name = "place_id", nullable = false, length = 64)
 	private String placeId;
-	
-	@Column(name = "place_name", length = 255)
-	private String placeName;
 	
 	@Column(name = "address", length = 255)
 	private String address;

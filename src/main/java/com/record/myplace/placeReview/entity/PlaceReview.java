@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.record.myplace.place.entity.Place;
 import com.record.myplace.user.entity.User;
 
 import jakarta.persistence.*;
@@ -32,6 +33,10 @@ public class PlaceReview {
     @Column(name = "place_id", nullable = false, length = 64)
     private String placeId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_id", referencedColumnName = "place_id", insertable = false, updatable = false)
+    private Place place;
+    
     @Column(name = "rating", nullable = false)
     private Integer rating;
 

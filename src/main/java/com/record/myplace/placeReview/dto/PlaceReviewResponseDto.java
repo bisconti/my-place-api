@@ -19,6 +19,7 @@ public class PlaceReviewResponseDto {
     private String userEmail;
     private String nickname;
     private String placeId;
+    private String placeName;
     private Integer rating;
     private String content;
     private LocalDateTime createdAt;
@@ -31,6 +32,7 @@ public class PlaceReviewResponseDto {
                 .userEmail(entity.getUserEmail())
                 .nickname(entity.getUser() != null ? entity.getUser().getNickname() : null)
                 .placeId(entity.getPlaceId())
+                .placeName(entity.getPlace() != null ? entity.getPlace().getPlaceName() : null)
                 .rating(entity.getRating())
                 .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())
