@@ -7,8 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "리뷰 응답 DTO")
-public class PlaceReviewResponseDto {
+@Schema(description = "리뷰 조회 항목 DTO")
+public class PlaceReviewItemDto {
 
     @Schema(description = "리뷰 ID", example = "1")
     private Long id;
@@ -28,7 +28,7 @@ public class PlaceReviewResponseDto {
     @Schema(description = "별점", example = "5")
     private Integer rating;
 
-    @Schema(description = "리뷰 내용", example = "맛있어요.")
+    @Schema(description = "리뷰 내용", example = "치킨이 바삭하고 정말 맛있었어요.")
     private String content;
 
     @Schema(description = "생성일시", example = "2026-04-01T12:30:00")
