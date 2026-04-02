@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.record.myplace.auth.entity.RefreshToken;
 
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long>{
-	Optional<RefreshToken> findByTokenHashAndRevoked(String tokenHash, String revoked);
-	List<RefreshToken> findAllByUseremailAndRevoked(String useremail, String revoked);
+public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+
+    Optional<RefreshToken> findByTokenHashAndRevoked(String tokenHash, String revoked);
+
+    List<RefreshToken> findAllByUseremailAndRevoked(String useremail, String revoked);
 }

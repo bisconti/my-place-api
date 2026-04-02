@@ -40,12 +40,6 @@ public class Place {
     @Column(name = "phone", length = 50)
     private String phone;
 
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @Column(name = "longitude")
-    private Double longitude;
-
     @OneToMany(mappedBy = "place")
     private List<PlaceReview> reviews = new ArrayList<>();
 }

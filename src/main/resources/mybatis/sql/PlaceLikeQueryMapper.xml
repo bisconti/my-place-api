@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.placeLike.mapper.PlaceLikeQueryMapper">
+
+    <select id="selectMyLikes"
+            resultType="com.record.myplace.placeLike.dto.PlaceLikeResponse">
+		SELECT pl.place_id				AS placeId
+				, pl.place_name			AS placeName
+				, pl.address			AS address
+            	, pl.category			AS category
+            	, pl.created_at			AS createdAt
+            	, 1						AS liked
+          FROM place_like pl
+         WHERE pl.useremail = #{useremail}
+         ORDER BY pl.created_at DESC
+    </select>
+
+    <select id="selectExists"
+            resultType="java.lang.Integer">
+		SELECT COUNT(*)
+          FROM place_like pl
+         WHERE pl.useremail = #{useremail}
+           AND pl.place_id = #{placeId}
+    </select>
+
+    <select id="selectCount"
+            resultType="java.lang.Long">
+		SELECT COUNT(*)
+          FROM place_like pl
+         WHERE pl.useremail = #{useremail}
+    </select>
+
+</mapper>

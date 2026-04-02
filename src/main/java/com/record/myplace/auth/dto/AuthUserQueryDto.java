@@ -1,4 +1,4 @@
-package com.record.myplace.user.dto;
+package com.record.myplace.auth.dto;
 
 import java.time.LocalDate;
 
@@ -6,11 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "내 정보 조회 응답 DTO")
-public class MeResponse {
+@Schema(description = "인증용 사용자 조회 DTO")
+public class AuthUserQueryDto {
 
     @Schema(description = "사용자 이메일", example = "test@example.com")
     private String email;
+
+    @Schema(description = "암호화된 비밀번호", example = "$2a$10$...")
+    private String password;
 
     @Schema(description = "사용자 이름", example = "이준민")
     private String username;

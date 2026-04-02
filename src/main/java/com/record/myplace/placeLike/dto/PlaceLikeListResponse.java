@@ -2,11 +2,13 @@ package com.record.myplace.placeLike.dto;
 
 import java.util.List;
 
-import lombok.Builder;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
-@Getter
-@Builder
+@Data
+@Schema(description = "내 찜 목록 응답 DTO")
 public class PlaceLikeListResponse {
-	private List<PlaceLikeResponse> items;
+
+    @Schema(description = "찜 목록")
+    private List<PlaceLikeResponse> items;
 }

@@ -1,16 +1,18 @@
 package com.record.myplace.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
-@Getter
-@AllArgsConstructor
+@Data
+@Schema(description = "프로필 수정 응답 DTO")
 public class UpdateProfileResponse {
-	private String message;
-	
-	private String useremail;
-	
-	private String nickname;
-	
-	private String bio;
+
+    @Schema(description = "사용자 이메일", example = "test@example.com")
+    private String email;
+
+    @Schema(description = "닉네임", example = "준민")
+    private String nickname;
+
+    @Schema(description = "자기소개", example = "맛집 탐방을 좋아합니다.")
+    private String bio;
 }

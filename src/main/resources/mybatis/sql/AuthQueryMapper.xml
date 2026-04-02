@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.auth.mapper.AuthQueryMapper">
+
+    <select id="selectUserByEmail"
+            resultType="com.record.myplace.auth.dto.AuthUserQueryDto">
+		SELECT u.useremail			AS email
+				, u.password			AS password
+				, u.username			AS username
+            	, u.nickname			AS nickname
+            	, u.birth_date			AS birthDate
+            	, u.gender				AS gender
+            	, u.bio					AS bio
+          FROM users u
+         WHERE u.useremail = #{email}
+    </select>
+
+    <select id="selectUserCountByEmail"
+            resultType="java.lang.Integer">
+		SELECT COUNT(*)
+          FROM users u
+         WHERE u.useremail = #{email}
+    </select>
+
+    <select id="selectPasswordResetTokenByToken"
+            resultType="com.record.myplace.auth.dto.PasswordResetTokenQueryDto">
+		SELECT prt.id					AS id
+				, prt.token				AS token
+				, prt.email				AS email
+            	, prt.expires_at		AS expiresAt
+            	, prt.used				AS used
+          FROM password_reset_token prt
+         WHERE prt.token = #{token}
+    </select>
+
+</mapper>
