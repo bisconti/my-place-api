@@ -3,14 +3,13 @@ package com.record.myplace.user.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.record.myplace.auth.principal.CustomUserDetails;
 import com.record.myplace.com.dto.MessageResponse;
-import com.record.myplace.placeReview.service.PlaceReviewService;
+import com.record.myplace.placeReview.service.PlaceReviewQueryService;
 import com.record.myplace.user.dto.ChangePasswordRequest;
 import com.record.myplace.user.dto.MeResponse;
 import com.record.myplace.user.dto.UpdateProfileResponse;
@@ -27,7 +26,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final PlaceReviewService placeReviewService;
+    private final PlaceReviewQueryService placeReviewQueryService;
 
     // 프로필 조회
     @GetMapping("/me")
@@ -38,7 +37,7 @@ public class UserController {
     // 마이페이지 리뷰 건수 조회
     @GetMapping("/{userEmail}/count")
     public ResponseEntity<Long> getReviewCountByUserEmail(@PathVariable String userEmail) {
-        long count = placeReviewService.getReviewCountByUserEmail(userEmail);
+        long count = placeReviewQueryService.getReviewCountByUserEmail(userEmail);
         return ResponseEntity.ok(count);
     }
 

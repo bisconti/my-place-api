@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.placeReview.mapper.PlaceReviewQueryMapper">
+
+    <select id="selectMyReviews"
+            resultType="com.record.myplace.placeReview.dto.PlaceReviewItemDto">
+		SELECT pr.id					AS id
+				, pr.useremail			AS userEmail
+				, u.nickname            AS nickname
+            	, pr.place_id           AS placeId
+            	, p.place_name          AS placeName
+            	, pr.rating             AS rating
+            	, pr.content            AS content
+            	, pr.created_at         AS createdAt
+            	, pr.updated_at         AS updatedAt
+          FROM place_review pr
+          LEFT JOIN users u
+                 ON pr.useremail = u.useremail
+          LEFT JOIN place p
+               ON pr.place_id = p.place_id
+         WHERE pr.useremail = #{userEmail}
+         ORDER BY pr.created_at DESC
+    </select>
+
+    <select id="selectReviewsByPlaceId"
+            resultType="com.record.myplace.placeReview.dto.PlaceReviewItemDto">
+        SELECT pr.id                   AS id
+            	, pr.useremail         AS userEmail
+            	, u.nickname           AS nickname
+            	, pr.place_id          AS placeId
+            	, p.place_name         AS placeName
+            	, pr.rating            AS rating
+            	, pr.content           AS content
+            	, pr.created_at        AS createdAt
+            	, pr.updated_at        AS updatedAt
+          FROM place_review pr
+          LEFT JOIN users u
+                 ON pr.useremail = u.useremail
+          LEFT JOIN place p
+                 ON pr.place_id = p.place_id
+         WHERE pr.place_id = #{placeId}
+         ORDER BY pr.created_at DESC
+    </select>
+
+    <select id="selectReviewSummary"
+            resultType="com.record.myplace.placeReview.dto.PlaceReviewSummaryDto">
+        SELECT pr.place_id                  	AS placeId
+            	, COALESCE(AVG(pr.rating), 0)  	AS averageRating
+            	, COUNT(*)                     	AS reviewCount
+          FROM place_review pr
+         WHERE pr.place_id = #{placeId}
+         GROUP BY pr.place_id
+    </select>
+
+    <select id="selectReviewImagesByReviewIds"
+            resultType="com.record.myplace.placeReview.dto.PlaceReviewImageResponseDto">
+        SELECT pri.id                   	AS id
+            	, pri.review_id            	AS reviewId
+            	, pri.original_file_name   	AS originalFileName
+            	, pri.stored_file_name     	AS storedFileName
+            	, pri.file_path            	AS filePath
+            	, pri.file_size            	AS fileSize
+            	, pri.sort_order           	AS sortOrder
+          FROM place_review_image pri
+         WHERE pri.review_id IN
+        <foreach collection="reviewIds" item="reviewId" open="(" separator="," close=")">
+            #{reviewId}
+        </foreach>
+         ORDER BY pri.review_id ASC, pri.sort_order ASC
+    </select>
+
+</mapper>
