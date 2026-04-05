@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.record.myplace.settings.mapper.UserNotificationSettingQueryMapper">
+	<select id="selectNotificationSettingsByUserEmail"
+	        resultType="com.record.myplace.settings.dto.NotificationSettingsResponseDto">
+	    SELECT id
+				, user_email 					AS userEmail
+	        	, review_reminder_enabled 		AS reviewReminderEnabled
+	        	, favorite_place_event_enabled 	AS favoritePlaceEventEnabled
+	        	, recommendation_enabled 		AS recommendationEnabled
+	        	, visit_reminder_enabled 		AS visitReminderEnabled
+	        	, created_at 					AS createdAt
+	        	, updated_at 					AS updatedAt
+	      FROM user_notification_setting
+	     WHERE user_email = #{userEmail}
+	</select>
+</mapper>

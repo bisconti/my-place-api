@@ -29,6 +29,11 @@ public class PlaceReviewCommandController {
             @ModelAttribute PlaceReviewRequestDto requestDto,
             @Parameter(description = "리뷰 이미지 파일 목록")
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+    	
+        System.out.println("받은 이미지 수: " + (images != null ? images.size() : 0));
+        if (images != null) {
+            images.forEach(img -> System.out.println("파일명: " + img.getOriginalFilename() + ", 크기: " + img.getSize()));
+        }
 
         return ResponseEntity.ok(placeReviewCommandService.createReview(requestDto, images));
     }

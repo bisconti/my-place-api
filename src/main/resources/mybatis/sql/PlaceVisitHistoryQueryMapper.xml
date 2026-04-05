@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.placeVisitHistory.mapper.PlaceVisitHistoryQueryMapper">
+
+    <select id="selectVisitHistoriesByUserEmail"
+            resultType="com.record.myplace.placeVisitHistory.dto.PlaceVisitHistoryResponseDto">
+        SELECT
+            id,
+            user_email AS userEmail,
+            place_id AS placeId,
+            visit_date AS visitDate,
+            visit_source AS visitSource,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM place_visit_history
+        WHERE user_email = #{userEmail}
+        ORDER BY visit_date DESC, id DESC
+    </select>
+
+    <select id="selectVisitedByUserEmailAndPlaceId"
+            resultType="com.record.myplace.placeVisitHistory.dto.PlaceVisitedResponseDto">
+        SELECT
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM place_visit_history
+                    WHERE user_email = #{userEmail}
+                      AND place_id = #{placeId}
+                )
+                OR EXISTS (
+                    SELECT 1
+                    FROM place_review
+                    WHERE user_email = #{userEmail}
+                      AND place_id = #{placeId}
+                )
+                THEN TRUE
+                ELSE FALSE
+            END AS visited
+    </select>
+
+</mapper>
