@@ -1,6 +1,6 @@
 package com.record.myplace.place.service;
 
-public interface PlaceService {
+public interface PlaceCommandService {
 
     void ensurePlaceExists(
             String placeId,

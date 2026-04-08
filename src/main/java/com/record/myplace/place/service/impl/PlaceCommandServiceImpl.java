@@ -5,14 +5,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.record.myplace.place.entity.Place;
 import com.record.myplace.place.repository.PlaceRepository;
-import com.record.myplace.place.service.PlaceService;
+import com.record.myplace.place.service.PlaceCommandService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PlaceServiceImpl implements PlaceService {
+public class PlaceCommandServiceImpl implements PlaceCommandService {
 
     private final PlaceRepository placeRepository;
 

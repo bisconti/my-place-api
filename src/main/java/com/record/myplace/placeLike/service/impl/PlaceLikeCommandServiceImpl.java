@@ -4,7 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.record.myplace.place.service.PlaceService;
+import com.record.myplace.place.service.PlaceCommandService;
 import com.record.myplace.placeLike.dto.PlaceLikeResponse;
 import com.record.myplace.placeLike.dto.PlaceLikeToggleRequest;
 import com.record.myplace.placeLike.entity.PlaceLike;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class PlaceLikeCommandServiceImpl implements PlaceLikeCommandService {
 
     private final PlaceLikeRepository placeLikeRepository;
-    private final PlaceService placeService;
+    private final PlaceCommandService placeService;
 
     @Override
     public PlaceLikeResponse toggle(String useremail, PlaceLikeToggleRequest req) {

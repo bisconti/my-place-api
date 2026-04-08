@@ -33,7 +33,7 @@
                 OR EXISTS (
                     SELECT 1
                     FROM place_review
-                    WHERE user_email = #{userEmail}
+                    WHERE useremail = #{userEmail}
                       AND place_id = #{placeId}
                 )
                 THEN TRUE

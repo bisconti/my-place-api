@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.notification.mapper.UserNotificationQueryMapper">
+
+    <select id="selectNotificationsByUserEmail"
+            resultType="com.record.myplace.notification.dto.UserNotificationResponseDto">
+        SELECT id
+            	, user_email AS userEmail
+            	, notification_type AS notificationType
+            	, title
+            	, content
+            	, target_id AS targetId
+            	, target_type AS targetType
+            	, is_read AS isRead
+            	, created_at AS createdAt
+            	, read_at AS readAt
+          FROM user_notification
+         WHERE user_email = #{userEmail}
+         ORDER BY created_at DESC, id DESC
+    </select>
+
+    <select id="selectUnreadNotificationCountByUserEmail"
+            resultType="com.record.myplace.notification.dto.UnreadNotificationCountResponseDto">
+        SELECT COUNT(*) AS unreadCount
+          FROM user_notification
+         WHERE user_email = #{userEmail}
+           AND is_read = 0
+    </select>
+
+    <select id="selectReviewReminderTargets"
+            resultType="com.record.myplace.notification.dto.ReviewReminderTargetResponseDto">
+        SELECT v.user_email AS userEmail
+            	, v.place_id AS placeId
+            	, p.place_name AS placeName
+            	, v.visit_date AS visitDate
+          FROM place_visit_history v
+         INNER JOIN user_notification_setting s
+            ON s.user_email = v.user_email
+           AND s.review_reminder_enabled = 1
+          LEFT JOIN place_review r
+            ON r.user_email = v.user_email
+           AND r.place_id = v.place_id
+          LEFT JOIN place p
+            ON p.place_id = v.place_id
+         WHERE r.id IS NULL
+           AND v.visit_date &lt;= DATE_SUB(CURDATE(), INTERVAL 3 DAY)
+           AND NOT EXISTS (
+              SELECT 1
+              FROM user_notification n
+              WHERE n.user_email = v.user_email
+                AND n.notification_type = 'REVIEW_REMINDER'
+                AND n.target_id = v.place_id
+                AND n.created_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+          )
+    </select>
+</mapper>

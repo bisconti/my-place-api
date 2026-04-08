@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.place.mapper.PlaceQueryMapper">
+
+    <select id="selectPlaceDetailByPlaceId"
+            resultType="com.record.myplace.place.dto.PlaceDetailResponseDto">
+        SELECT p.place_id AS id
+            	, p.place_name AS name
+            	, p.address AS address
+            	, p.road_address AS roadAddress
+            	, p.category AS category
+            	, p.phone AS phone
+            	, CASE
+                	WHEN #{userEmail} IS NOT NULL AND pl.useremail IS NOT NULL THEN TRUE
+                	ELSE FALSE
+            	END AS liked
+            	, 0 AS distanceM
+            	, pi.image_id AS imageId
+            	, pi.original_file_name AS originalFileName
+            	, pi.stored_file_name AS storedFileName
+            	, pi.file_path AS filePath
+            	, pi.file_size AS fileSize
+            	, pi.sort_order AS sortOrder
+          FROM place p
+          LEFT JOIN place_like pl
+            ON pl.place_id = p.place_id
+           AND pl.useremail = #{userEmail}
+          LEFT JOIN place_image pi
+            ON pi.place_id = p.place_id
+           AND pl.useremail = #{userEmail}
+         WHERE p.place_id = #{placeId}
+    </select>
+
+</mapper>

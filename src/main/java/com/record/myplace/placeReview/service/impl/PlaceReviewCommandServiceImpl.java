@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.record.myplace.place.service.PlaceService;
+import com.record.myplace.place.service.PlaceCommandService;
 import com.record.myplace.placeReview.dto.PlaceReviewRequestDto;
 import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
 import com.record.myplace.placeReview.entity.PlaceReview;
@@ -19,6 +19,7 @@ import com.record.myplace.placeReview.entity.PlaceReviewImage;
 import com.record.myplace.placeReview.repository.PlaceReviewImageRepository;
 import com.record.myplace.placeReview.repository.PlaceReviewRepository;
 import com.record.myplace.placeReview.service.PlaceReviewCommandService;
+import com.record.myplace.placeVisitHistory.service.PlaceVisitHistoryCommandService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,8 @@ public class PlaceReviewCommandServiceImpl implements PlaceReviewCommandService 
 
     private final PlaceReviewRepository placeReviewRepository;
     private final PlaceReviewImageRepository placeReviewImageRepository;
-    private final PlaceService placeService;
+    private final PlaceVisitHistoryCommandService placeVisitHistoryCommandService;
+    private final PlaceCommandService placeService;
     
     // 파일 업로드 경로
     @Value("${file.upload-dir}")
@@ -99,6 +101,12 @@ public class PlaceReviewCommandServiceImpl implements PlaceReviewCommandService 
                 placeReviewImageRepository.save(image);
             }
         }
+        
+        // 리뷰 저장 시 방문 기록 자동 생성
+        placeVisitHistoryCommandService.createVisitHistoryFromReviewIfNotExists(
+                requestDto.getUserEmail(),
+                requestDto.getPlaceId()
+        );
 
         PlaceReviewResponseDto response = new PlaceReviewResponseDto();
         response.setId(saved.getId());
