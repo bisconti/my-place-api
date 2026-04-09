@@ -6,7 +6,7 @@
 <mapper namespace="com.record.myplace.place.mapper.PlaceQueryMapper">
 
     <select id="selectPlaceDetailByPlaceId"
-            resultType="com.record.myplace.place.dto.PlaceDetailResponseDto">
+            resultType="com.record.myplace.place.dto.PlaceDetailWithImageRowDto">
         SELECT p.place_id AS id
             	, p.place_name AS name
             	, p.address AS address
@@ -18,7 +18,7 @@
                 	ELSE FALSE
             	END AS liked
             	, 0 AS distanceM
-            	, pi.image_id AS imageId
+            	, pi.id AS imageId
             	, pi.original_file_name AS originalFileName
             	, pi.stored_file_name AS storedFileName
             	, pi.file_path AS filePath

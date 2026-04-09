@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourceLocation = "file:///" + uploadDir.replace("\\", "/") + "/";
 
-        registry.addResourceHandler("/uploads/reviews/**")
+        registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(resourceLocation);
     }
 }
