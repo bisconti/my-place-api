@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.notification.mapper.RecommendationNotificationQueryMapper">
+
+    <select id="selectRecommendationTargetUsers"
+            resultType="com.record.myplace.notification.dto.RecommendationNotificationTargetUserResponseDto">
+        SELECT
+            uns.user_email AS userEmail
+        FROM user_notification_setting uns
+        WHERE uns.recommendation_enabled = 1
+    </select>
+
+    <select id="selectUserPreferredCategories"
+            parameterType="string"
+            resultType="com.record.myplace.notification.dto.UserPreferredCategoryResponseDto">
+        SELECT
+            t.userEmail AS userEmail,
+            t.category AS category,
+            SUM(t.score) AS score
+        FROM (
+            SELECT
+                pr.useremail AS userEmail,
+                p.category AS category,
+                3 + CASE WHEN pr.rating >= 4 THEN 2 ELSE 0 END AS score
+            FROM place_review pr
+            INNER JOIN place p
+                ON p.place_id = pr.place_id
+            WHERE pr.useremail = #{userEmail}
+
+            UNION ALL
+
+            SELECT
+                pl.useremail AS userEmail,
+                p.category AS category,
+                2 AS score
+            FROM place_like pl
+            INNER JOIN place p
+                ON p.place_id = pl.place_id
+            WHERE pl.useremail = #{userEmail}
+        ) t
+        GROUP BY t.userEmail, t.category
+        ORDER BY score DESC
+        LIMIT 3
+    </select>
+
+    <select id="selectRecommendedPlaces"
+            resultType="com.record.myplace.notification.dto.RecommendedPlaceResponseDto">
+        SELECT
+            p.place_id AS placeId,
+            p.place_name AS placeName,
+            p.category AS category,
+            p.address AS address,
+            COALESCE(AVG(pr.rating), 0) AS averageRating,
+            COUNT(pr.id) AS reviewCount
+        FROM place p
+        LEFT JOIN place_review pr
+            ON pr.place_id = p.place_id
+        WHERE p.category = #{category}
+          AND NOT EXISTS (
+                SELECT 1
+                FROM place_review mypr
+                WHERE mypr.useremail = #{userEmail}
+                  AND mypr.place_id = p.place_id
+          )
+          AND NOT EXISTS (
+                SELECT 1
+                FROM user_notification un
+                WHERE un.user_email = #{userEmail}
+                  AND un.notification_type = 'RECOMMENDATION'
+                  AND un.target_id = p.place_id
+                  AND un.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+          )
+        GROUP BY p.place_id, p.place_name, p.category, p.address
+        HAVING COUNT(pr.id) >= 1
+        ORDER BY averageRating DESC, reviewCount DESC
+        LIMIT 5
+    </select>
+
+</mapper>

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.record.myplace.notification.dto.RecommendationNotificationCreateRequestDto;
 import com.record.myplace.notification.dto.ReviewReminderTargetResponseDto;
 import com.record.myplace.notification.entity.UserNotification;
 import com.record.myplace.notification.repository.UserNotificationRepository;
@@ -49,6 +50,23 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
         entity.setIsRead(false);
 
         userNotificationRepository.save(entity);
+    }
+    
+    @Override
+    public void createRecommendationNotification(RecommendationNotificationCreateRequestDto requestDto) {
+        UserNotification notification = new UserNotification();
+        notification.setUserEmail(requestDto.getUserEmail());
+        notification.setNotificationType("RECOMMENDATION");
+        notification.setTitle("취향에 맞는 맛집을 추천해드려요");
+        notification.setContent(
+                String.format("%s 카테고리의 \"%s\" 맛집을 추천해드려요.",
+                        requestDto.getCategory(),
+                        requestDto.getPlaceName())
+        );
+        notification.setTargetId(requestDto.getPlaceId());
+        notification.setTargetType("PLACE");
+
+        userNotificationRepository.save(notification);
     }
 
     @Override
