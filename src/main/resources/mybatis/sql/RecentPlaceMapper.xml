@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.recentplace.mapper.RecentPlaceMapper">
+
+    <select id="selectRecentPlaces"
+            parameterType="string"
+            resultType="com.record.myplace.recentplace.dto.RecentPlaceQueryDto">
+
+        SELECT rp.place_id AS placeId
+             , p.name AS placeName
+             , pi.file_path AS thumbnail
+             , p.rating AS rating
+             , p.review_count AS reviewCount
+             , DATE_FORMAT(rp.viewed_at, '%Y-%m-%d %H:%i:%s') AS viewedAt
+          FROM recent_place rp
+     LEFT JOIN place p
+            ON rp.place_id = p.id
+     LEFT JOIN place_image pi
+            ON p.id = pi.place_id
+           AND pi.sort_order = 1
+         WHERE 1 = 1
+           AND rp.user_email = #{userEmail}
+         ORDER BY rp.viewed_at DESC
+         LIMIT 10
+
+    </select>
+
+</mapper>
