@@ -33,5 +33,26 @@
            AND pl.useremail = #{userEmail}
          WHERE p.place_id = #{placeId}
     </select>
+    
+    <!-- header 영역 식당 검색 자동완성 조회 -->
+    <select id="selectPlaceAutoCompleteList"
+            parameterType="string"
+            resultType="com.record.myplace.place.dto.PlaceAutoCompleteResponseDto">
+        SELECT p.place_id      AS placeId
+             , p.place_name    AS placeName
+             , p.category      AS category
+             , p.road_address  AS roadAddress
+          FROM place p
+         WHERE 1 = 1
+           AND p.place_name LIKE CONCAT('%', #{keyword}, '%')
+         ORDER BY
+               CASE
+                   WHEN p.place_name LIKE CONCAT(#{keyword}, '%') THEN 1
+                   ELSE 2
+               END
+             , CHAR_LENGTH(p.place_name)
+             , p.place_name
+         LIMIT 10
+    </select>
 
 </mapper>

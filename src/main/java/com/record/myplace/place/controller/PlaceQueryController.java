@@ -1,12 +1,16 @@
 package com.record.myplace.place.controller;
 
+import java.util.List;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.record.myplace.auth.principal.CustomUserDetails;
+import com.record.myplace.place.dto.PlaceAutoCompleteResponseDto;
 import com.record.myplace.place.dto.PlaceDetailResponseDto;
 import com.record.myplace.place.service.PlaceQueryService;
 
@@ -34,5 +38,12 @@ public class PlaceQueryController {
         
         log.info("place detail 조회: placeId={}, userEmail={}", placeId, userEmail);
         return placeQueryService.getPlaceDetail(placeId, userEmail);
+    }
+    
+    @GetMapping("/autocomplete")
+    @Operation(summary = "식당 자동완성", description = "식당명을 기준으로 자동완성 목록을 조회합니다.")
+    public List<PlaceAutoCompleteResponseDto> getPlaceAutoCompleteList(
+            @RequestParam("keyword") String keyword) {
+        return placeQueryService.getPlaceAutoCompleteList(keyword);
     }
 }

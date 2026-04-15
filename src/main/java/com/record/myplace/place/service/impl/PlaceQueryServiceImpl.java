@@ -1,11 +1,14 @@
 package com.record.myplace.place.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import com.record.myplace.place.dto.PlaceAutoCompleteResponseDto;
 import com.record.myplace.place.dto.PlaceDetailResponseDto;
 import com.record.myplace.place.dto.PlaceDetailWithImageRowDto;
 import com.record.myplace.place.dto.PlaceImageResponseDto;
@@ -70,5 +73,20 @@ public class PlaceQueryServiceImpl implements PlaceQueryService {
 
         log.info("식당 상세 조회 서비스 종료: placeId={}, imageCount={}", placeId, images.size());
         return response;
+    }
+    
+    @Override
+    public List<PlaceAutoCompleteResponseDto> getPlaceAutoCompleteList(String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return Collections.emptyList();
+        }
+
+        String trimmedKeyword = keyword.trim();
+
+        if (trimmedKeyword.length() < 1) {
+            return Collections.emptyList();
+        }
+
+        return placeQueryMapper.selectPlaceAutoCompleteList(trimmedKeyword);
     }
 }
