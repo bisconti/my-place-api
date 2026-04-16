@@ -30,7 +30,6 @@
            AND pl.useremail = #{userEmail}
           LEFT JOIN place_image pi
             ON pi.place_id = p.place_id
-           AND pl.useremail = #{userEmail}
          WHERE p.place_id = #{placeId}
     </select>
     
@@ -44,11 +43,20 @@
              , p.road_address  AS roadAddress
           FROM place p
          WHERE 1 = 1
-           AND p.place_name LIKE CONCAT('%', #{keyword}, '%')
+           AND (
+                p.place_name LIKE CONCAT('%', #{keyword}, '%')
+                OR p.road_address LIKE CONCAT('%', #{keyword}, '%')
+                OR p.address LIKE CONCAT('%', #{keyword}, '%')
+                OR p.category LIKE CONCAT('%', #{keyword}, '%')
+           )
          ORDER BY
                CASE
                    WHEN p.place_name LIKE CONCAT(#{keyword}, '%') THEN 1
-                   ELSE 2
+                   WHEN p.place_name LIKE CONCAT('%', #{keyword}, '%') THEN 2
+                   WHEN p.road_address LIKE CONCAT(#{keyword}, '%') THEN 3
+                   WHEN p.address LIKE CONCAT(#{keyword}, '%') THEN 4
+                   WHEN p.category LIKE CONCAT(#{keyword}, '%') THEN 5
+                   ELSE 6
                END
              , CHAR_LENGTH(p.place_name)
              , p.place_name
