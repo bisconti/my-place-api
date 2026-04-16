@@ -2,6 +2,7 @@ package com.record.myplace.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,6 +27,10 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/places/autocomplete").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/places/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reviews/place/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reviews/summary/*").permitAll()
                 .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/user/**").authenticated()
                 .anyRequest().authenticated()
