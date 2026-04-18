@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/places/autocomplete").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/places/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/places/list-metadata").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/place/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/summary/*").permitAll()
                 .requestMatchers("/test/**").permitAll()

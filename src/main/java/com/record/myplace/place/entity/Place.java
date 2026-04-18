@@ -40,6 +40,15 @@ public class Place {
     @Column(name = "phone", length = 50)
     private String phone;
 
+    @Column(name = "featured_live_info_tv", nullable = false)
+    private Boolean featuredLiveInfoTv = false;
+
+    @Column(name = "featured_life_master", nullable = false)
+    private Boolean featuredLifeMaster = false;
+
+    @Column(name = "featured_baekban_trip", nullable = false)
+    private Boolean featuredBaekbanTrip = false;
+
     @OneToMany(mappedBy = "place")
     private List<PlaceReview> reviews = new ArrayList<>();
 }

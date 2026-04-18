@@ -3,6 +3,7 @@ package com.record.myplace.place.service.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import com.record.myplace.place.dto.PlaceAutoCompleteResponseDto;
 import com.record.myplace.place.dto.PlaceDetailResponseDto;
 import com.record.myplace.place.dto.PlaceDetailWithImageRowDto;
 import com.record.myplace.place.dto.PlaceImageResponseDto;
+import com.record.myplace.place.dto.PlaceListItemResponseDto;
 import com.record.myplace.place.mapper.PlaceQueryMapper;
 import com.record.myplace.place.service.PlaceQueryService;
 
@@ -88,5 +90,24 @@ public class PlaceQueryServiceImpl implements PlaceQueryService {
         }
 
         return placeQueryMapper.selectPlaceAutoCompleteList(trimmedKeyword);
+    }
+
+    @Override
+    public List<PlaceListItemResponseDto> getPlaceListMetadata(List<String> placeIds, String userEmail) {
+        if (placeIds == null || placeIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> normalizedPlaceIds = placeIds.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (normalizedPlaceIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return placeQueryMapper.selectPlaceListMetadata(normalizedPlaceIds, userEmail);
     }
 }

@@ -63,4 +63,47 @@
          LIMIT 10
     </select>
 
+    <select id="selectPlaceListMetadata"
+            resultType="com.record.myplace.place.dto.PlaceListItemResponseDto">
+        SELECT p.place_id AS placeId
+             , pi.file_path AS thumbnail
+             , COALESCE(rs.rating, 0) AS rating
+             , COALESCE(rs.reviewCount, 0) AS reviewCount
+             , COALESCE(ls.likeCount, 0) AS likeCount
+             , CASE
+                   WHEN #{userEmail} IS NOT NULL AND pl.useremail IS NOT NULL THEN TRUE
+                   ELSE FALSE
+               END AS liked
+             , COALESCE(p.featured_live_info_tv, FALSE) AS featuredLiveInfoTv
+             , COALESCE(p.featured_life_master, FALSE) AS featuredLifeMaster
+             , COALESCE(p.featured_baekban_trip, FALSE) AS featuredBaekbanTrip
+          FROM place p
+     LEFT JOIN (
+               SELECT pr.place_id AS placeId
+                    , ROUND(AVG(pr.rating), 1) AS rating
+                    , COUNT(*) AS reviewCount
+                 FROM place_review pr
+             GROUP BY pr.place_id
+           ) rs
+            ON p.place_id = rs.placeId
+     LEFT JOIN (
+               SELECT pl2.place_id AS placeId
+                    , COUNT(*) AS likeCount
+                 FROM place_like pl2
+             GROUP BY pl2.place_id
+           ) ls
+            ON p.place_id = ls.placeId
+     LEFT JOIN place_like pl
+            ON p.place_id = pl.place_id
+           AND pl.useremail = #{userEmail}
+     LEFT JOIN place_image pi
+            ON p.place_id = pi.place_id
+           AND pi.sort_order = 1
+         WHERE 1 = 1
+           AND p.place_id IN
+           <foreach collection="placeIds" item="placeId" open="(" separator="," close=")">
+               #{placeId}
+           </foreach>
+    </select>
+
 </mapper>

@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.record.myplace.auth.principal.CustomUserDetails;
 import com.record.myplace.place.dto.PlaceAutoCompleteResponseDto;
 import com.record.myplace.place.dto.PlaceDetailResponseDto;
+import com.record.myplace.place.dto.PlaceListItemResponseDto;
+import com.record.myplace.place.dto.PlaceListMetadataRequestDto;
 import com.record.myplace.place.service.PlaceQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,5 +49,15 @@ public class PlaceQueryController {
     public List<PlaceAutoCompleteResponseDto> getPlaceAutoCompleteList(
             @RequestParam("keyword") String keyword) {
         return placeQueryService.getPlaceAutoCompleteList(keyword);
+    }
+
+    @PostMapping("/list-metadata")
+    @Operation(summary = "식당 목록 메타데이터 조회", description = "목록에 필요한 썸네일, 별점, 리뷰 수, 찜 수, 방송 출연 여부를 조회합니다.")
+    public List<PlaceListItemResponseDto> getPlaceListMetadata(
+            @RequestBody PlaceListMetadataRequestDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        String userEmail = userDetails != null ? userDetails.getEmail() : null;
+        return placeQueryService.getPlaceListMetadata(request.getPlaceIds(), userEmail);
     }
 }

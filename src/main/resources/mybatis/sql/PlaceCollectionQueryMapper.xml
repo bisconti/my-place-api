@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.record.myplace.placeCollection.mapper.PlaceCollectionQueryMapper">
+
+    <select id="selectMyCollections"
+            resultType="com.record.myplace.placeCollection.dto.PlaceCollectionResponse">
+        SELECT pc.id AS collectionId
+             , pc.name AS name
+             , COUNT(pci.id) AS placeCount
+             , CASE
+                   WHEN #{placeId} IS NOT NULL
+                    AND SUM(CASE WHEN pci.place_id = #{placeId} THEN 1 ELSE 0 END) > 0
+                   THEN TRUE
+                   ELSE FALSE
+               END AS saved
+             , pc.created_at AS createdAt
+             , pc.updated_at AS updatedAt
+          FROM place_collection pc
+     LEFT JOIN place_collection_item pci
+            ON pc.id = pci.collection_id
+         WHERE 1 = 1
+           AND pc.useremail = #{useremail}
+      GROUP BY pc.id
+             , pc.name
+             , pc.created_at
+             , pc.updated_at
+      ORDER BY pc.updated_at DESC
+             , pc.created_at DESC
+    </select>
+
+    <select id="selectCollectionDetail"
+            resultType="com.record.myplace.placeCollection.dto.PlaceCollectionResponse">
+        SELECT pc.id AS collectionId
+             , pc.name AS name
+             , COUNT(pci.id) AS placeCount
+             , FALSE AS saved
+             , pc.created_at AS createdAt
+             , pc.updated_at AS updatedAt
+          FROM place_collection pc
+     LEFT JOIN place_collection_item pci
+            ON pc.id = pci.collection_id
+         WHERE 1 = 1
+           AND pc.useremail = #{useremail}
+           AND pc.id = #{collectionId}
+      GROUP BY pc.id
+             , pc.name
+             , pc.created_at
+             , pc.updated_at
+    </select>
+
+    <select id="selectCollectionItems"
+            resultType="com.record.myplace.placeCollection.dto.PlaceCollectionItemResponse">
+        SELECT pci.id AS collectionItemId
+             , pci.collection_id AS collectionId
+             , pci.place_id AS placeId
+             , p.place_name AS placeName
+             , p.category AS category
+             , p.address AS address
+             , p.road_address AS roadAddress
+             , pi.file_path AS thumbnail
+             , rs.rating AS rating
+             , rs.reviewCount AS reviewCount
+             , pci.created_at AS savedAt
+          FROM place_collection_item pci
+     LEFT JOIN place_collection pc
+            ON pci.collection_id = pc.id
+     LEFT JOIN place p
+            ON pci.place_id = p.place_id
+     LEFT JOIN place_image pi
+            ON p.place_id = pi.place_id
+           AND pi.sort_order = 1
+     LEFT JOIN (
+               SELECT pr.place_id AS placeId
+                    , ROUND(AVG(pr.rating), 1) AS rating
+                    , COUNT(*) AS reviewCount
+                 FROM place_review pr
+             GROUP BY pr.place_id
+           ) rs
+            ON p.place_id = rs.placeId
+         WHERE 1 = 1
+           AND pc.useremail = #{useremail}
+           AND pc.id = #{collectionId}
+      ORDER BY pci.created_at DESC
+    </select>
+
+</mapper>
