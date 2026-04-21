@@ -5,10 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.record.myplace.infra.redis.RedisCacheNames;
 import com.record.myplace.place.dto.PlaceAutoCompleteResponseDto;
 import com.record.myplace.place.dto.PlaceDetailResponseDto;
 import com.record.myplace.place.dto.PlaceDetailWithImageRowDto;
@@ -78,6 +80,11 @@ public class PlaceQueryServiceImpl implements PlaceQueryService {
     }
     
     @Override
+    @Cacheable(
+            cacheNames = RedisCacheNames.PLACE_AUTOCOMPLETE,
+            key = "#keyword == null ? '' : #keyword.trim().toLowerCase()",
+            unless = "#result == null || #result.isEmpty()"
+    )
     public List<PlaceAutoCompleteResponseDto> getPlaceAutoCompleteList(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             return Collections.emptyList();

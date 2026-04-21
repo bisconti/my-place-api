@@ -1,4 +1,4 @@
-﻿package com.record.myplace.place.dto;
+package com.record.myplace.place.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

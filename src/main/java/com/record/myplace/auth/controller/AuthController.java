@@ -19,7 +19,6 @@ import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.ResetPasswordRequest;
 import com.record.myplace.auth.dto.SignUpRequest;
 import com.record.myplace.auth.dto.ValidateTokenResponse;
-import com.record.myplace.auth.repository.RefreshTokenRepository;
 import com.record.myplace.auth.service.AuthService;
 import com.record.myplace.com.dto.MessageResponse;
 
@@ -30,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 	private final AuthService authService;
-	private final RefreshTokenRepository refreshTokenRepository;
 	
     /**
      * 로그인
@@ -59,8 +57,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody Map<String, String> body) {
         String email = body.get("email");
-        refreshTokenRepository.findAllByUseremailAndRevoked(email, "N")
-            .forEach(rt -> rt.setRevoked("Y"));
+        authService.logout(email);
         return ResponseEntity.ok().build();
     }
 

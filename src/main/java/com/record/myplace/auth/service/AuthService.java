@@ -20,4 +20,6 @@ public interface AuthService {
 
 	void validateResetPasswordToken(String token);
 
+	void logout(String email);
+
 }
