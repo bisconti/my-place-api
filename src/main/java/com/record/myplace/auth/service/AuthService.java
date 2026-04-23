@@ -2,13 +2,14 @@ package com.record.myplace.auth.service;
 
 import com.record.myplace.auth.dto.LoginRequest;
 import com.record.myplace.auth.dto.LoginResponse;
+import com.record.myplace.auth.dto.TokenRefreshResponse;
 import com.record.myplace.auth.dto.SignUpRequest;
 
 public interface AuthService {
 
 	LoginResponse login(LoginRequest request);
 	
-	String refresh(String refreshTokenRaw);
+	TokenRefreshResponse refresh(String refreshTokenRaw);
 
 	boolean checkEmailDuplication(String email);
 

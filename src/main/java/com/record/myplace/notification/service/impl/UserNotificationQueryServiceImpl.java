@@ -9,6 +9,7 @@ import com.record.myplace.notification.dto.ReviewReminderTargetResponseDto;
 import com.record.myplace.notification.dto.UnreadNotificationCountResponseDto;
 import com.record.myplace.notification.dto.UserNotificationResponseDto;
 import com.record.myplace.notification.mapper.UserNotificationQueryMapper;
+import com.record.myplace.notification.service.NotificationUnreadCountCacheService;
 import com.record.myplace.notification.service.UserNotificationQueryService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class UserNotificationQueryServiceImpl implements UserNotificationQueryService {
 
     private final UserNotificationQueryMapper userNotificationQueryMapper;
+    private final NotificationUnreadCountCacheService notificationUnreadCountCacheService;
 
     @Override
     public List<UserNotificationResponseDto> getNotifications(String userEmail) {
@@ -27,7 +29,9 @@ public class UserNotificationQueryServiceImpl implements UserNotificationQuerySe
 
     @Override
     public UnreadNotificationCountResponseDto getUnreadNotificationCount(String userEmail) {
-        return userNotificationQueryMapper.selectUnreadNotificationCountByUserEmail(userEmail);
+        UnreadNotificationCountResponseDto response = new UnreadNotificationCountResponseDto();
+        response.setUnreadCount(notificationUnreadCountCacheService.getUnreadCount(userEmail));
+        return response;
     }
 
     @Override

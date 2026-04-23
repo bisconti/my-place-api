@@ -18,6 +18,7 @@ import com.record.myplace.auth.dto.LoginRequest;
 import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.ResetPasswordRequest;
 import com.record.myplace.auth.dto.SignUpRequest;
+import com.record.myplace.auth.dto.TokenRefreshResponse;
 import com.record.myplace.auth.dto.ValidateTokenResponse;
 import com.record.myplace.auth.service.AuthService;
 import com.record.myplace.com.dto.MessageResponse;
@@ -40,15 +41,13 @@ public class AuthController {
     }
     
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(
+    public ResponseEntity<TokenRefreshResponse> refresh(
             @RequestBody Map<String, String> body) {
 
         String refreshToken = body.get("refreshToken");
-        String newAccessToken = authService.refresh(refreshToken);
+        TokenRefreshResponse response = authService.refresh(refreshToken);
 
-        return ResponseEntity.ok(Map.of(
-            "accessToken", newAccessToken
-        ));
+        return ResponseEntity.ok(response);
     }
     
     /*

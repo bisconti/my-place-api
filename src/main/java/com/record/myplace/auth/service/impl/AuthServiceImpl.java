@@ -16,6 +16,7 @@ import com.record.myplace.auth.dto.LoginRequest;
 import com.record.myplace.auth.dto.LoginResponse;
 import com.record.myplace.auth.dto.PasswordResetTokenQueryDto;
 import com.record.myplace.auth.dto.SignUpRequest;
+import com.record.myplace.auth.dto.TokenRefreshResponse;
 import com.record.myplace.auth.entity.PasswordResetToken;
 import com.record.myplace.auth.entity.RefreshToken;
 import com.record.myplace.auth.exception.UnauthorizedException;
@@ -87,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public String refresh(String refreshTokenRaw) {
+    public TokenRefreshResponse refresh(String refreshTokenRaw) {
         if (!tokenProvider.validateToken(refreshTokenRaw) || !tokenProvider.isRefreshToken(refreshTokenRaw)) {
             throw new UnauthorizedException("유효하지 않은 refresh token입니다.");
         }
@@ -126,7 +127,10 @@ public class AuthServiceImpl implements AuthService {
 
         saveRefreshToken(email, newRefreshTokenHash);
 
-        return newAccessToken;
+        return TokenRefreshResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 
     @Override

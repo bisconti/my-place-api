@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.record.myplace.notification.dto.RecommendationNotificationCreateRequestDto;
 import com.record.myplace.notification.dto.ReviewReminderTargetResponseDto;
+import com.record.myplace.notification.dto.UserNotificationResponseDto;
 import com.record.myplace.notification.entity.UserNotification;
 import com.record.myplace.notification.repository.UserNotificationRepository;
+import com.record.myplace.notification.service.NotificationUnreadCountCacheService;
 import com.record.myplace.notification.service.UserNotificationCommandService;
 import com.record.myplace.notification.service.UserNotificationQueryService;
 
@@ -22,6 +24,7 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
 
     private final UserNotificationRepository userNotificationRepository;
     private final UserNotificationQueryService userNotificationQueryService;
+    private final NotificationUnreadCountCacheService notificationUnreadCountCacheService;
 
     @Override
     public void createReviewReminderNotification(ReviewReminderTargetResponseDto targetDto) {
@@ -50,8 +53,9 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
         entity.setIsRead(false);
 
         userNotificationRepository.save(entity);
+        notificationUnreadCountCacheService.increase(targetDto.getUserEmail());
     }
-    
+
     @Override
     public void createRecommendationNotification(RecommendationNotificationCreateRequestDto requestDto) {
         UserNotification notification = new UserNotification();
@@ -65,8 +69,10 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
         );
         notification.setTargetId(requestDto.getPlaceId());
         notification.setTargetType("PLACE");
+        notification.setIsRead(false);
 
         userNotificationRepository.save(notification);
+        notificationUnreadCountCacheService.increase(requestDto.getUserEmail());
     }
 
     @Override
@@ -82,14 +88,14 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
         entity.setReadAt(LocalDateTime.now());
 
         userNotificationRepository.save(entity);
+        notificationUnreadCountCacheService.decrease(userEmail);
     }
 
     @Override
     public void markAllAsRead(String userEmail) {
-        List<com.record.myplace.notification.dto.UserNotificationResponseDto> notifications =
-                userNotificationQueryService.getNotifications(userEmail);
+        List<UserNotificationResponseDto> notifications = userNotificationQueryService.getNotifications(userEmail);
 
-        for (com.record.myplace.notification.dto.UserNotificationResponseDto notification : notifications) {
+        for (UserNotificationResponseDto notification : notifications) {
             if (Boolean.TRUE.equals(notification.getIsRead())) {
                 continue;
             }
@@ -105,5 +111,7 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
             entity.setReadAt(LocalDateTime.now());
             userNotificationRepository.save(entity);
         }
+
+        notificationUnreadCountCacheService.reset(userEmail);
     }
 }
