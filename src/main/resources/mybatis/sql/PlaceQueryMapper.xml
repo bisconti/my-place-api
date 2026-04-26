@@ -13,6 +13,8 @@
             	, p.road_address AS roadAddress
             	, p.category AS category
             	, p.phone AS phone
+            	, p.latitude AS latitude
+            	, p.longitude AS longitude
             	, CASE
                 	WHEN #{userEmail} IS NOT NULL AND pl.useremail IS NOT NULL THEN TRUE
                 	ELSE FALSE
@@ -97,8 +99,16 @@
             ON p.place_id = pl.place_id
            AND pl.useremail = #{userEmail}
      LEFT JOIN place_image pi
-            ON p.place_id = pi.place_id
-           AND pi.sort_order = 1
+            ON pi.id = (
+               SELECT pi2.id
+                 FROM place_image pi2
+                WHERE pi2.place_id = p.place_id
+                ORDER BY
+                      CASE WHEN pi2.sort_order IS NULL THEN 1 ELSE 0 END
+                    , pi2.sort_order ASC
+                    , pi2.id ASC
+                LIMIT 1
+           )
          WHERE 1 = 1
            AND p.place_id IN
            <foreach collection="placeIds" item="placeId" open="(" separator="," close=")">

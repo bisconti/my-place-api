@@ -1,24 +1,36 @@
 package com.record.myplace.auth.principal;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Collection;
+import java.util.List;
 
-import com.record.myplace.user.entity.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Collection;
-
 @Getter
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
-	
-	private final User user;
+
+    private final String email;
+    private final String username;
+    private final String password;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; // 권한 안쓰면 null 가능
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -40,18 +52,4 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-	@Override
-	public String getPassword() {
-		return user.getPassword();
-	}
-
-	@Override
-	public String getUsername() {
-		return user.getUsername();
-	}
-	
-	public String getEmail() {
-		return user.getEmail();
-	}
 }

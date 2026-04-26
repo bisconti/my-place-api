@@ -71,6 +71,11 @@ public class JwtTokenProvider {
         return getClaims(token).getSubject();
     }
 
+    public String getUsername(String token) {
+        Object username = getClaims(token).get("username");
+        return username instanceof String ? (String) username : null;
+    }
+
     public boolean isRefreshToken(String token) {
         Object type = getClaims(token).get("type");
         return "refresh".equals(type);

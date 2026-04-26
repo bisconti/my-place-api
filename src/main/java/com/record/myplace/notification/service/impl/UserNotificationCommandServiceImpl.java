@@ -1,19 +1,16 @@
 package com.record.myplace.notification.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.record.myplace.notification.dto.RecommendationNotificationCreateRequestDto;
 import com.record.myplace.notification.dto.ReviewReminderTargetResponseDto;
-import com.record.myplace.notification.dto.UserNotificationResponseDto;
 import com.record.myplace.notification.entity.UserNotification;
 import com.record.myplace.notification.repository.UserNotificationRepository;
 import com.record.myplace.notification.service.NotificationUnreadCountCacheService;
 import com.record.myplace.notification.service.UserNotificationCommandService;
-import com.record.myplace.notification.service.UserNotificationQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class UserNotificationCommandServiceImpl implements UserNotificationCommandService {
 
     private final UserNotificationRepository userNotificationRepository;
-    private final UserNotificationQueryService userNotificationQueryService;
     private final NotificationUnreadCountCacheService notificationUnreadCountCacheService;
 
     @Override
@@ -86,32 +82,16 @@ public class UserNotificationCommandServiceImpl implements UserNotificationComma
 
         entity.setIsRead(true);
         entity.setReadAt(LocalDateTime.now());
-
         userNotificationRepository.save(entity);
         notificationUnreadCountCacheService.decrease(userEmail);
     }
 
     @Override
     public void markAllAsRead(String userEmail) {
-        List<UserNotificationResponseDto> notifications = userNotificationQueryService.getNotifications(userEmail);
+        int updatedCount = userNotificationRepository.markAllAsReadByUserEmail(userEmail, LocalDateTime.now());
 
-        for (UserNotificationResponseDto notification : notifications) {
-            if (Boolean.TRUE.equals(notification.getIsRead())) {
-                continue;
-            }
-
-            UserNotification entity = userNotificationRepository.findByIdAndUserEmail(notification.getId(), userEmail)
-                    .orElse(null);
-
-            if (entity == null) {
-                continue;
-            }
-
-            entity.setIsRead(true);
-            entity.setReadAt(LocalDateTime.now());
-            userNotificationRepository.save(entity);
+        if (updatedCount > 0) {
+            notificationUnreadCountCacheService.reset(userEmail);
         }
-
-        notificationUnreadCountCacheService.reset(userEmail);
     }
 }

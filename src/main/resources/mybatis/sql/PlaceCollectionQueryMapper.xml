@@ -70,8 +70,16 @@
      LEFT JOIN place p
             ON pci.place_id = p.place_id
      LEFT JOIN place_image pi
-            ON p.place_id = pi.place_id
-           AND pi.sort_order = 1
+            ON pi.id = (
+               SELECT pi2.id
+                 FROM place_image pi2
+                WHERE pi2.place_id = p.place_id
+                ORDER BY
+                      CASE WHEN pi2.sort_order IS NULL THEN 1 ELSE 0 END
+                    , pi2.sort_order ASC
+                    , pi2.id ASC
+                LIMIT 1
+           )
      LEFT JOIN (
                SELECT pr.place_id AS placeId
                     , ROUND(AVG(pr.rating), 1) AS rating

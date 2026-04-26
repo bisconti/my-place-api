@@ -1,31 +1,33 @@
 package com.record.myplace.auth.security;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.UUID;
 
-import com.record.myplace.auth.principal.CustomUserDetails;
-import com.record.myplace.user.entity.User;
-import com.record.myplace.user.repository.UserRepository; // 네 repo 경로에 맞춰
-import lombok.RequiredArgsConstructor;
-
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.record.myplace.auth.principal.CustomUserDetails;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String TRACE_ID_ATTRIBUTE = "traceId";
+    private static final String TRACE_ID_HEADER = "X-Trace-Id";
+
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -34,89 +36,91 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
-
-        String bearer = request.getHeader("Authorization");
+        String traceId = resolveTraceId(request);
         String token = resolveToken(request);
 
-        System.out.println("\n[JWT-FILTER] " + method + " " + uri);
-        System.out.println("[JWT-FILTER] hasAuthorizationHeader=" + (bearer != null && !bearer.isBlank()));
-        System.out.println("[JWT-FILTER] tokenResolved=" + (token != null && !token.isBlank()));
-        System.out.println("[JWT-FILTER] beforeAuth=" + SecurityContextHolder.getContext().getAuthentication());
+        request.setAttribute(TRACE_ID_ATTRIBUTE, traceId);
+        response.setHeader(TRACE_ID_HEADER, traceId);
+        MDC.put(TRACE_ID_ATTRIBUTE, traceId);
 
         try {
-            // 1) 토큰 없으면 그냥 통과
             if (!StringUtils.hasText(token)) {
-                System.out.println("[JWT-FILTER] SKIP: token is empty");
+                log.debug("[traceId={}] Authorization header가 없어 인증 없이 통과합니다. {} {}",
+                        traceId, request.getMethod(), request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 2) 이미 인증 있으면 통과
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
-                System.out.println("[JWT-FILTER] SKIP: authentication already exists");
+                log.debug("[traceId={}] 기존 인증 정보가 있어 JWT 인증을 건너뜁니다. {} {}",
+                        traceId, request.getMethod(), request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 3) 토큰 검증
-            boolean valid = jwtTokenProvider.validateToken(token);
-            System.out.println("[JWT-FILTER] validateToken=" + valid);
-
-            if (!valid) {
-                System.out.println("[JWT-FILTER] SKIP: invalid token");
+            if (!jwtTokenProvider.validateToken(token)) {
+                log.debug("[traceId={}] 유효하지 않은 access token입니다. {} {}",
+                        traceId, request.getMethod(), request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 4) 이메일 추출
+            if (jwtTokenProvider.isRefreshToken(token)) {
+                log.debug("[traceId={}] refresh token은 인증 필터에서 사용하지 않습니다. {} {}",
+                        traceId, request.getMethod(), request.getRequestURI());
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String email = jwtTokenProvider.getEmail(token);
-            System.out.println("[JWT-FILTER] extractedEmail=" + email);
+            String username = jwtTokenProvider.getUsername(token);
 
-            if (!StringUtils.hasText(email)) {
-                System.out.println("[JWT-FILTER] SKIP: email is empty");
+            if (!StringUtils.hasText(email) || !StringUtils.hasText(username)) {
+                log.warn("[traceId={}] access token claim이 부족해 인증을 건너뜁니다. emailPresent={}, usernamePresent={}, {} {}",
+                        traceId, StringUtils.hasText(email), StringUtils.hasText(username),
+                        request.getMethod(), request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 5) DB 조회
-            User user = userRepository.findByEmail(email).orElse(null);
-            System.out.println("[JWT-FILTER] userFound=" + (user != null));
+            CustomUserDetails userDetails = new CustomUserDetails(email, username, "");
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            if (user == null) {
-                System.out.println("[JWT-FILTER] SKIP: no user in DB for email=" + email);
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            // 6) 인증 세팅
-            CustomUserDetails userDetails = new CustomUserDetails(user);
-            var auth = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            System.out.println("[JWT-FILTER] AUTH SET: principal=" + auth.getPrincipal().getClass().getName());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("[traceId={}] JWT 인증 성공. userEmail={}, {} {}",
+                    traceId, email, request.getMethod(), request.getRequestURI());
 
             filterChain.doFilter(request, response);
-
-        } catch (Exception e) {
-            System.out.println("[JWT-FILTER] ERROR: " + e.getClass().getName() + " / " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.warn("[traceId={}] JWT 인증 필터 처리 중 예외가 발생했습니다. {} {}",
+                    traceId, request.getMethod(), request.getRequestURI(), ex);
             filterChain.doFilter(request, response);
         } finally {
-            System.out.println("[JWT-FILTER] afterAuth=" + SecurityContextHolder.getContext().getAuthentication());
+            MDC.remove(TRACE_ID_ATTRIBUTE);
         }
+    }
+
+    private String resolveTraceId(HttpServletRequest request) {
+        String headerTraceId = request.getHeader(TRACE_ID_HEADER);
+        if (StringUtils.hasText(headerTraceId)) {
+            return headerTraceId;
+        }
+
+        Object attributeTraceId = request.getAttribute(TRACE_ID_ATTRIBUTE);
+        if (attributeTraceId instanceof String && StringUtils.hasText((String) attributeTraceId)) {
+            return (String) attributeTraceId;
+        }
+
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
 
     private String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        if (!StringUtils.hasText(bearer)) return null;
+        if (!StringUtils.hasText(bearer)) {
+            return null;
+        }
 
-        if (bearer.startsWith("Bearer ")) return bearer.substring(7);
-        return null;
+        return bearer.startsWith("Bearer ") ? bearer.substring(7) : null;
     }
 }
