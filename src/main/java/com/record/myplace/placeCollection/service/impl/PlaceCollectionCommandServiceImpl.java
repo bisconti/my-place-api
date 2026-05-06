@@ -16,11 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class PlaceCollectionCommandServiceImpl implements PlaceCollectionCommandService {
+
+    private static final String DEFAULT_COLLECTION_COLOR = "#dc2626";
+    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("^#[0-9a-fA-F]{6}$");
 
     private final PlaceCollectionRepository placeCollectionRepository;
     private final PlaceCollectionItemRepository placeCollectionItemRepository;
@@ -41,6 +45,7 @@ public class PlaceCollectionCommandServiceImpl implements PlaceCollectionCommand
         PlaceCollection collection = new PlaceCollection();
         collection.setUseremail(useremail);
         collection.setName(name);
+        collection.setColor(resolveColor(request.getColor()));
 
         PlaceCollection saved = placeCollectionRepository.save(collection);
         return toResponse(saved);
@@ -119,6 +124,7 @@ public class PlaceCollectionCommandServiceImpl implements PlaceCollectionCommand
         PlaceCollectionResponse response = new PlaceCollectionResponse();
         response.setCollectionId(collection.getId());
         response.setName(collection.getName());
+        response.setColor(collection.getColor());
         response.setPlaceCount(0L);
         response.setSaved(false);
         response.setCreatedAt(collection.getCreatedAt());
@@ -133,5 +139,19 @@ public class PlaceCollectionCommandServiceImpl implements PlaceCollectionCommand
         response.setSaved(true);
         response.setSavedAt(savedAt);
         return response;
+    }
+
+    private String resolveColor(String color) {
+        String normalizedColor = color != null ? color.trim() : "";
+
+        if (normalizedColor.isBlank()) {
+            return DEFAULT_COLLECTION_COLOR;
+        }
+
+        if (!HEX_COLOR_PATTERN.matcher(normalizedColor).matches()) {
+            throw new IllegalArgumentException("리스트 색상 형식이 올바르지 않습니다.");
+        }
+
+        return normalizedColor.toLowerCase();
     }
 }

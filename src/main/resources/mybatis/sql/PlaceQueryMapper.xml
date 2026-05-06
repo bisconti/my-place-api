@@ -79,6 +79,9 @@
              , COALESCE(p.featured_live_info_tv, FALSE) AS featuredLiveInfoTv
              , COALESCE(p.featured_life_master, FALSE) AS featuredLifeMaster
              , COALESCE(p.featured_baekban_trip, FALSE) AS featuredBaekbanTrip
+             , sc.collectionId AS savedCollectionId
+             , sc.collectionName AS savedCollectionName
+             , sc.collectionColor AS savedCollectionColor
           FROM place p
      LEFT JOIN (
                SELECT pr.place_id AS placeId
@@ -98,6 +101,29 @@
      LEFT JOIN place_like pl
             ON p.place_id = pl.place_id
            AND pl.useremail = #{userEmail}
+     LEFT JOIN (
+               SELECT pci.place_id AS placeId
+                    , pc.id AS collectionId
+                    , pc.name AS collectionName
+                    , COALESCE(pc.color, '#dc2626') AS collectionColor
+                 FROM place_collection_item pci
+                 JOIN place_collection pc
+                   ON pc.id = pci.collection_id
+                WHERE pc.useremail = #{userEmail}
+                  AND pc.id = (
+                      SELECT pc2.id
+                        FROM place_collection_item pci2
+                        JOIN place_collection pc2
+                          ON pc2.id = pci2.collection_id
+                       WHERE pci2.place_id = pci.place_id
+                         AND pc2.useremail = pc.useremail
+                    ORDER BY pc2.updated_at DESC
+                           , pc2.created_at DESC
+                           , pc2.id DESC
+                       LIMIT 1
+                  )
+           ) sc
+            ON sc.placeId = p.place_id
      LEFT JOIN place_image pi
             ON pi.id = (
                SELECT pi2.id

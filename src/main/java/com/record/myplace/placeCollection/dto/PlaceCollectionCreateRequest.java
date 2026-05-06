@@ -9,4 +9,7 @@ public class PlaceCollectionCreateRequest {
 
     @Schema(description = "리스트 이름", example = "치킨")
     private String name;
+
+    @Schema(description = "리스트 색상", example = "#dc2626")
+    private String color;
 }

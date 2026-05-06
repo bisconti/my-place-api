@@ -2,7 +2,9 @@ package com.record.myplace.user.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.record.myplace.auth.principal.CustomUserDetails;
 import com.record.myplace.placeReview.service.PlaceReviewQueryService;
@@ -32,13 +34,13 @@ public class UserQueryController {
         return ResponseEntity.ok(userQueryService.getMe(user.getEmail()));
     }
 
-    @Operation(summary = "사용자 리뷰 건수 조회", description = "사용자 이메일 기준 리뷰 작성 건수를 조회합니다.")
-    @GetMapping("/{userEmail}/count")
-    public ResponseEntity<Long> getReviewCountByUserEmail(
-            @Parameter(description = "사용자 이메일", example = "test@example.com")
-            @PathVariable String userEmail) {
+    @Operation(summary = "내 리뷰 개수 조회", description = "로그인한 사용자의 리뷰 작성 개수를 조회합니다.")
+    @GetMapping("/me/review-count")
+    public ResponseEntity<Long> getMyReviewCount(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user) {
 
-        long count = placeReviewQueryService.getReviewCountByUserEmail(userEmail);
+        long count = placeReviewQueryService.getReviewCountByUserEmail(user.getEmail());
         return ResponseEntity.ok(count);
     }
 }

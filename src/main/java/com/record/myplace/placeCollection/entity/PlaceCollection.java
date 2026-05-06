@@ -35,6 +35,9 @@ public class PlaceCollection {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
+    @Column(name = "color", length = 20)
+    private String color;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -49,6 +52,9 @@ public class PlaceCollection {
         }
         if (updatedAt == null) {
             updatedAt = now;
+        }
+        if (color == null || color.isBlank()) {
+            color = "#dc2626";
         }
     }
 

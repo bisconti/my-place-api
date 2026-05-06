@@ -15,10 +15,13 @@ public class PlaceCollectionResponse {
     @Schema(description = "리스트 이름", example = "치킨")
     private String name;
 
+    @Schema(description = "리스트 색상", example = "#dc2626")
+    private String color;
+
     @Schema(description = "리스트에 저장된 식당 수", example = "4")
     private Long placeCount;
 
-    @Schema(description = "현재 식당이 이 리스트에 저장되었는지 여부", example = "true")
+    @Schema(description = "현재 식당이 리스트에 저장되어 있는지 여부", example = "true")
     private Boolean saved;
 
     @Schema(description = "리스트 생성 일시", example = "2026-04-16T10:20:30")

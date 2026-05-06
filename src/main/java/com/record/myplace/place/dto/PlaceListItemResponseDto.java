@@ -33,4 +33,13 @@ public class PlaceListItemResponseDto {
 
     @Schema(description = "백반기행 출연 여부", example = "false")
     private Boolean featuredBaekbanTrip;
+
+    @Schema(description = "저장 리스트 ID", example = "1")
+    private Long savedCollectionId;
+
+    @Schema(description = "저장 리스트 이름", example = "가족 모임")
+    private String savedCollectionName;
+
+    @Schema(description = "저장 리스트 색상", example = "#dc2626")
+    private String savedCollectionColor;
 }

@@ -9,6 +9,7 @@
             resultType="com.record.myplace.placeCollection.dto.PlaceCollectionResponse">
         SELECT pc.id AS collectionId
              , pc.name AS name
+             , COALESCE(pc.color, '#dc2626') AS color
              , COUNT(pci.id) AS placeCount
              , CASE
                    WHEN #{placeId} IS NOT NULL
@@ -25,6 +26,7 @@
            AND pc.useremail = #{useremail}
       GROUP BY pc.id
              , pc.name
+             , pc.color
              , pc.created_at
              , pc.updated_at
       ORDER BY pc.updated_at DESC
@@ -35,6 +37,7 @@
             resultType="com.record.myplace.placeCollection.dto.PlaceCollectionResponse">
         SELECT pc.id AS collectionId
              , pc.name AS name
+             , COALESCE(pc.color, '#dc2626') AS color
              , COUNT(pci.id) AS placeCount
              , FALSE AS saved
              , pc.created_at AS createdAt
@@ -47,6 +50,7 @@
            AND pc.id = #{collectionId}
       GROUP BY pc.id
              , pc.name
+             , pc.color
              , pc.created_at
              , pc.updated_at
     </select>

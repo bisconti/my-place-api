@@ -9,7 +9,9 @@ import com.record.myplace.placeReview.dto.PlaceReviewResponseDto;
 
 public interface PlaceReviewCommandService {
 
-    PlaceReviewResponseDto createReview(PlaceReviewRequestDto requestDto, List<MultipartFile> images);
+    PlaceReviewResponseDto createReview(String userEmail, PlaceReviewRequestDto requestDto, List<MultipartFile> images);
 
-    void deleteReview(Long reviewId);
+    PlaceReviewResponseDto updateReview(String userEmail, Long reviewId, PlaceReviewRequestDto requestDto);
+
+    void deleteReview(String userEmail, Long reviewId);
 }

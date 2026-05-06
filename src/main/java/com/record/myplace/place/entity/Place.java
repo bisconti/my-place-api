@@ -40,6 +40,12 @@ public class Place {
     @Column(name = "phone", length = 50)
     private String phone;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "featured_live_info_tv", nullable = false)
     private Boolean featuredLiveInfoTv = false;
 
